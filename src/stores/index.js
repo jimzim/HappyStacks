@@ -33,6 +33,11 @@ export default class AppStore {
         return true;
       }
     }
+
+    @action removeTemplate(template) {
+      const { selectedTemplates } = this;
+      selectedTemplates.splice(selectedTemplates.indexOf(template), 1);
+    }
 }
 
 export class Template {

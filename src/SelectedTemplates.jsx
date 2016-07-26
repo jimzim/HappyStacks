@@ -18,7 +18,15 @@ export class SelectedTemplatesItem extends Component {
   render() {
     const { template } = this.props;
     return (
-      <div>{template.name}</div>
+      <div>
+        {template.name + ' '}
+        <a onClick={this.handleRemove}>X</a>
+      </div>
     );
+  }
+  handleRemove = e => {
+    e.preventDefault();
+    const { store, template } = this.props;
+    store.removeTemplate(template);
   }
 }
