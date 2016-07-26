@@ -14,7 +14,7 @@ class App extends Component {
         <TemplatePicker templates={filteredTemplates} />
         <strong>Selected Templates</strong>
         <SelectedTemplates templates={selectedTemplates} />
-        <button onClick={this.saveTemplate}>Save Template</button>
+        <button onClick={this.saveTemplate} disabled={selectedTemplates.length === 0}>Save Template</button>
         <DevTools />
       </div>
     );
