@@ -1,0 +1,406 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"baseUrl": {
+			"type": "string",
+			"metadata": {
+				"description": "Base URL for Marketplace",
+				"artifactsBaseUrl": ""
+			},
+			"defaultValue": "https://raw.githubusercontent.com/docker/ddc-azure/master"
+		},
+		"location": {
+			"type": "string",
+			"metadata": {
+				"description": "Location"
+			}
+		},
+		"clusterPrefix": {
+			"type": "string",
+			"defaultValue": "ucpclus",
+			"metadata": {
+				"description": "UCP Cluster Prefix"
+			}
+		},
+		"ucpControllerSize": {
+			"type": "string",
+			"defaultValue": "Standard_DS2_v2",
+			"metadata": {
+				"description": "Size of the UCP Controller VMs"
+			}
+		},
+		"ucpControllerCount": {
+			"type": "int",
+			"defaultValue": 3,
+			"metadata": {
+				"description": "Number of UCP Controller VMs"
+			}
+		},
+		"ucpNodeSize": {
+			"type": "string",
+			"defaultValue": "Standard_DS2_v2",
+			"metadata": {
+				"description": "Size of the UCP node VMs"
+			}
+		},
+		"ucpNodeCount": {
+			"type": "int",
+			"defaultValue": 1,
+			"metadata": {
+				"description": "Number of UCP node VMs"
+			}
+		},
+		"ucpDtrNodeSize": {
+			"type": "string",
+			"defaultValue": "Standard_DS2_v2",
+			"metadata": {
+				"description": "Size of the DTR node VMs"
+			}
+		},
+		"ucpDtrNodeCount": {
+			"type": "int",
+			"defaultValue": 3,
+			"metadata": {
+				"description": "Number of DTR node VMs"
+			}
+		},
+		"adminUsername": {
+			"type": "string",
+			"defaultValue": "ucpadmin",
+			"metadata": {
+				"description": "OS Admin User Name for UCP Controller Nodes, UCP Nodes and DTR Nodes"
+			}
+		},
+		"authenticationType": {
+			"type": "string",
+			"defaultValue": "password",
+			"metadata": {
+				"description": "Authentication type"
+			}
+		},
+		"adminPassword": {
+			"type": "securestring",
+			"defaultValue": "",
+			"metadata": {
+				"description": "OS Admin password"
+			}
+		},
+		"sshPublicKey": {
+			"type": "string",
+			"defaultValue": "",
+			"metadata": {
+				"description": "SSH public key"
+			}
+		},
+		"virtualNetworkName": {
+			"type": "string",
+			"defaultValue": "ucpvnet",
+			"metadata": {
+				"description": "Name of the Virtual Network"
+			}
+		},
+		"virtualNetworkAddressPrefix": {
+			"type": "string",
+			"metadata": {
+				"description": "The virtual network address space"
+			}
+		},
+		"controllerSubnetName": {
+			"type": "string",
+			"defaultValue": "ucp-controller-subnet",
+			"metadata": {
+				"description": "The Subnet name for UCP Controller Nodes"
+			}
+		},
+		"controllerSubnetPrefix": {
+			"type": "string",
+			"metadata": {
+				"description": "The Subnet prefix for UCP Controller Nodes"
+			}
+		},
+		"nodeSubnetName": {
+			"type": "string",
+			"defaultValue": "ucp-node-subnet",
+			"metadata": {
+				"description": "The Subnet name for UCP Nodes and DTR Nodes"
+			}
+		},
+		"nodeSubnetPrefix": {
+			"type": "string",
+			"metadata": {
+				"description": "The Subnet prefix for UCP Nodes and DTR Nodes"
+			}
+		},
+		"controllerLbPublicIpAddress": {
+			"type": "string",
+			"defaultValue": "clbpip",
+			"metadata": {
+				"description": "Name of IP Address for Controller Load Balancer"
+			}
+		},
+		"controllerLbPublicIpDnsName": {
+			"type": "string",
+			"metadata": {
+				"description": "DNS label of Public IP for Controller Load Balancer"
+			}
+		},
+		"nodeLbPublicIpAddress": {
+			"type": "string",
+			"defaultValue": "nlbpip",
+			"metadata": {
+				"description": "Name of IP Address for Node Load Balancer"
+			}
+		},
+		"nodeLbPublicIpDnsName": {
+			"type": "string",
+			"metadata": {
+				"description": "DNS label for Node Load Balancer"
+			}
+		},
+		"nodeDtrLbPublicIpAddress": {
+			"type": "string",
+			"defaultValue": "dlbpip",
+			"metadata": {
+				"description": "Public IP Address name of DTR Load Balancer"
+			}
+		},
+		"nodeDtrLbPublicIpDnsName": {
+			"type": "string",
+			"metadata": {
+				"description": "DNS label of Public IP for DTR Load Balancer"
+			}
+		},
+		"ucpLicenseKey": {
+			"type": "string",
+			"metadata": {
+				"description": "License Key for UCP"
+			}
+		},
+		"ucpAdminPassword": {
+			"type": "securestring",
+			"metadata": {
+				"description": "Password for UCP Admin Account"
+			}
+		}
+	},
+	"variables": {
+		"apiVersionCompute": "2015-06-15",
+		"apiVersionNetwork": "2015-06-15",
+		"apiVersionStorage": "2015-06-15",
+		"linkTemplateApiVersion": "2015-01-01",
+
+		"vnetTemplate": "[concat(parameters('baseUrl'), '/', 'newvnet.json')]",
+		"orchestratorTemplateLink": "[concat(parameters('baseUrl'), '/', parameters('orchestratorName'), '.json')]",
+		"cicdTemplateLink": "[concat(parameters('baseUrl'), '/', parameters('cicdName'), '.json')]",
+		"dBTemplateLink": "[concat(parameters('baseUrl'), '/', parameters('dBName'), '.json')]",
+		"vnetId": "[resourceId('Microsoft.Network/virtualNetworks',parameters('virtualNetworkName'))]",
+		"subnet1Ref": "[concat(variables('vnetId'),'/subnets/',parameters('subnet1Name'))]",
+		"subnet2Ref": "[concat(variables('vnetId'),'/subnets/',parameters('subnet2Name'))]",
+		"subnet3Ref": "[concat(variables('vnetId'),'/subnets/',parameters('subnet3Name'))]",
+		"subnet4Ref": "[concat(variables('vnetId'),'/subnets/',parameters('subnet4Name'))]"
+
+	},
+	"resources": [{
+		"apiVersion": "[variables('linkTemplateApiVersion')]",
+		"name": "VirtualNetworkTemplate",
+		"type": "Microsoft.Resources/deployments",
+		"properties": {
+			"mode": "incremental",
+			"templateLink": {
+				"uri": "[variables('vnetTemplate')]",
+				"contentVersion": "1.0.0.0"
+			},
+			"parameters": {
+				"location": {
+					"value": "[parameters('location')]"
+				},
+				"virtualNetworkName": {
+					"value": "[parameters('virtualNetworkName')]"
+				},
+				"virtualNetworkAddressPrefix": {
+					"value": "[parameters('virtualNetworkAddressPrefix')]"
+				},
+				"controllerSubnetName": {
+					"value": "[parameters('controllerSubnetName')]"
+				},
+				"controllerSubnetPrefix": {
+					"value": "[parameters('controllerSubnetPrefix')]"
+				},
+				"nodeSubnetName": {
+					"value": "[parameters('nodeSubnetName')]"
+				},
+				"nodeSubnetPrefix": {
+					"value": "[parameters('nodeSubnetPrefix')]"
+				},
+				"apiVersion": {
+					"value": "[variables('apiVersionNetwork')]"
+				}
+			}
+		}
+	}, {
+		"apiVersion": "[variables('linkTemplateApiVersion')]",
+		"name": "OrchestratorTemplate",
+		"type": "Microsoft.Resources/deployments",
+		"dependsOn": [
+			"VirtualNetworkTemplate"
+		],
+		"properties": {
+			"mode": "incremental",
+			"templateLink": {
+				"uri": "[variables('orchestratorTemplateLink')]",
+				"contentVersion": "1.0.0.0"
+			},
+			"parameters": {
+				"apiVersionCompute": {
+					"value": "[variables('apiVersionCompute')]"
+				},
+				"apiVersionNetwork": {
+					"value": "[variables('apiVersionNetwork')]"
+				},
+				"apiVersionStorage": {
+					"value": "[variables('apiVersionStorage')]"
+				},
+				"location": {
+					"value": "[parameters('location')]"
+				},
+				"vmNamePrefix": {
+					"value": "[parameters('clusterPrefix')]"
+				},
+				"adminUsername": {
+					"value": "[parameters('adminUsername')]"
+				},
+				"adminPassword": {
+					"value": "[parameters('adminPassword')]"
+				},
+				"authenticationType": {
+					"value": "[parameters('authenticationType')]"
+				},
+				"sshPublicKey": {
+					"value": "[parameters('sshPublicKey')]"
+				},
+				"vmSize": {
+					"value": "[parameters('ucpControllerSize')]"
+				},
+				"subnet1Ref": {
+					"value": "[variables('subnet1Ref')]"
+				},
+				"subnet2Ref": {
+					"value": "[variables('subnet2Ref')]"
+				}
+			}
+		}
+	}, {
+		"apiVersion": "[variables('linkTemplateApiVersion')]",
+		"name": "CICDTemplate",
+		"type": "Microsoft.Resources/deployments",
+		"dependsOn": [
+			"VirtualNetworkTemplate"
+		],
+		"properties": {
+			"mode": "incremental",
+			"templateLink": {
+				"uri": "[variables('cicdTemplateLink')]",
+				"contentVersion": "1.0.0.0"
+			},
+			"parameters": {
+				"apiVersionCompute": {
+					"value": "[variables('apiVersionCompute')]"
+				},
+				"apiVersionNetwork": {
+					"value": "[variables('apiVersionNetwork')]"
+				},
+				"apiVersionStorage": {
+					"value": "[variables('apiVersionStorage')]"
+				},
+				"location": {
+					"value": "[parameters('location')]"
+				},
+				"vmNamePrefix": {
+					"value": "[concat(parameters('clusterPrefix'), copyindex())]"
+				},
+				"adminUsername": {
+					"value": "[parameters('adminUsername')]"
+				},
+				"adminPassword": {
+					"value": "[parameters('adminPassword')]"
+				},
+				"authenticationType": {
+					"value": "[parameters('authenticationType')]"
+				},
+				"sshPublicKey": {
+					"value": "[parameters('sshPublicKey')]"
+				},
+				"vmSize": {
+					"value": "[parameters('ucpNodeSize')]"
+				},
+				"subnetRef": {
+					"value": "[variables('subnet3Ref')]"
+				}
+			}
+		}
+	}, {
+		"apiVersion": "[variables('linkTemplateApiVersion')]",
+		"name": "DBTemplate",
+		"type": "Microsoft.Resources/deployments",
+		"dependsOn": [
+			"VirtualNetworkTemplate"
+		],
+		"properties": {
+			"mode": "incremental",
+			"templateLink": {
+				"uri": "[variables('dBTemplateLink')]",
+				"contentVersion": "1.0.0.0"
+			},
+			"parameters": {
+				"apiVersionCompute": {
+					"value": "[variables('apiVersionCompute')]"
+				},
+				"apiVersionNetwork": {
+					"value": "[variables('apiVersionNetwork')]"
+				},
+				"apiVersionStorage": {
+					"value": "[variables('apiVersionStorage')]"
+				},
+				"location": {
+					"value": "[parameters('location')]"
+				},
+				"vmNamePrefix": {
+					"value": "[concat(parameters('clusterPrefix'), copyindex())]"
+				},
+				"adminUsername": {
+					"value": "[parameters('adminUsername')]"
+				},
+				"adminPassword": {
+					"value": "[parameters('adminPassword')]"
+				},
+				"authenticationType": {
+					"value": "[parameters('authenticationType')]"
+				},
+				"sshPublicKey": {
+					"value": "[parameters('sshPublicKey')]"
+				},
+				"vmSize": {
+					"value": "[parameters('ucpDtrNodeSize')]"
+				},
+				"subnetRef": {
+					"value": "[variables('subnet4Ref')]"
+				}
+			}
+		}
+	}],
+	"outputs": {
+		"ucpConsoleAddress": {
+			"value": "[concat('https://', reference(parameters('controllerLbPublicIpAddress')).dnsSettings.fqdn)]",
+			"type": "string"
+		},
+		"dtrConsoleAddress": {
+			"value": "[concat('https://', reference(parameters('nodeDtrLbPublicIpAddress')).dnsSettings.fqdn)]",
+			"type": "string"
+		},
+		"ucpNodeLoadBalancer": {
+			"value": "[concat('https://', reference(parameters('nodeLbPublicIpAddress')).dnsSettings.fqdn)]",
+			"type": "string"
+		}
+	}
+}

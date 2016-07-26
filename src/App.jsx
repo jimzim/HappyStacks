@@ -27,7 +27,7 @@ class TemplateList extends Component {
     const { templates } = this.props;
     return (
       <ul>
-        {templates.map(template => <TemplateListItem key={template} template={template} />)}
+        {templates.map(template => <TemplateListItem key={template.name} template={template} />)}
       </ul>
     );
   }
@@ -39,7 +39,7 @@ class TemplateListItem extends Component {
     const { template } = this.props;
     return (
       <div>
-      {template}
+        {template.name}
       </div>
     );
   }

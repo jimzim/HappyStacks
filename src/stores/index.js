@@ -1,18 +1,15 @@
-import { action, computed, observable } from 'mobx';
+import { action, extendObservable, computed, observable } from 'mobx';
+import templates from '../templates';
 
 export default class AppStore {
     @observable filterText = '';
 
-    @observable templates = [
-      'hello',
-      'world',
-      'hello world'
-    ];
+    @observable templates = templates.map(template => new Template(template));
 
     @computed get filteredTemplates() {
       const { filterText, templates } = this;
       if (filterText && filterText.length > 0) {
-        return templates.filter(template => template.indexOf(this.filterText) >= 0);
+        return templates.filter(template => template.name.toUpperCase().indexOf(this.filterText.toUpperCase()) >= 0);
       } else {
         return templates;
       }
@@ -25,4 +22,14 @@ export default class AppStore {
     @action clearFilterText() {
        this.filterText = '';
     }
+}
+
+export class Template {
+  constructor(json) {
+    extendObservable(this, json);
+  }
+
+  @computed get name() {
+    return this.resources[0].name;
+  }
 }
