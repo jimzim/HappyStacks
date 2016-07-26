@@ -13,7 +13,7 @@ export class TemplatePicker extends Component {
   }
 }
 
-@observer
+@observer(['store'])
 export class TemplatePickerItem extends Component {
   render() {
     const { template } = this.props;
@@ -27,6 +27,9 @@ export class TemplatePickerItem extends Component {
   }
   handleClick = e => {
      e.preventDefault();
-     alert('clicked');
+     const { store, template } = this.props;
+     if (!store.addTemplate(template)) {
+        alert(`Template with name "${template.name}" already added`);
+     }
   }
 }

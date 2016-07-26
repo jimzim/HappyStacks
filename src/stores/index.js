@@ -5,6 +5,7 @@ export default class AppStore {
     @observable filterText = '';
 
     @observable templates = templates.map(template => new Template(template));
+    @observable selectedTemplates = [];
 
     @computed get filteredTemplates() {
       const { filterText, templates } = this;
@@ -21,6 +22,16 @@ export default class AppStore {
 
     @action clearFilterText() {
        this.filterText = '';
+    }
+
+    @action addTemplate(template) {
+      const { selectedTemplates } = this;
+      if (selectedTemplates.indexOf(template) >= 0) {
+        return false;
+      } else {
+        selectedTemplates.push(template);
+        return true;
+      }
     }
 }
 
