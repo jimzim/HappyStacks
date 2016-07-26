@@ -14,14 +14,19 @@ class App extends Component {
         <TemplatePicker templates={filteredTemplates} />
         <strong>Selected Templates</strong>
         <SelectedTemplates templates={selectedTemplates} />
+        <button onClick={this.saveTemplate}>Save Template</button>
         <DevTools />
       </div>
     );
   }
-
   handleChange = e => {
     const { store } = this.props;
     store.setFilterText(e.target.value);
+  }
+  saveTemplate = e => {
+    e.preventDefault();
+    const { selectedTemplates } = this.props.store;
+    console.log(JSON.stringify(selectedTemplates));
   }
 };
 
