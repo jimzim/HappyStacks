@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import DevTools from 'mobx-react-devtools';
 import { observer } from 'mobx-react';
+import { TemplatePicker } from './TemplatePicker';
 
 @observer(['store'])
 class App extends Component {
@@ -9,7 +10,7 @@ class App extends Component {
     return (
       <div>
         <input type="text" placeholder="Search ..." onChange={this.handleChange} />
-        <TemplateList templates={filteredTemplates} />
+        <TemplatePicker templates={filteredTemplates} />
         <DevTools />
       </div>
     );
@@ -20,29 +21,5 @@ class App extends Component {
     store.setFilterText(e.target.value);
   }
 };
-
-@observer
-class TemplateList extends Component {
-  render() {
-    const { templates } = this.props;
-    return (
-      <ul>
-        {templates.map(template => <TemplateListItem key={template.name} template={template} />)}
-      </ul>
-    );
-  }
-}
-
-@observer
-class TemplateListItem extends Component {
-  render() {
-    const { template } = this.props;
-    return (
-      <div>
-        {template.name}
-      </div>
-    );
-  }
-}
 
 export default App;
