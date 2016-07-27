@@ -4,7 +4,8 @@
   "description": "happystack",
   "scripts": {
     "start": "node server.js",
-    "lint": "eslint src"
+    "lint": "eslint src",
+    "build": "webpack"
   },
   "repository": {
     "type": "git",
