@@ -2,33 +2,23 @@ import React, { Component } from 'react';
 import DevTools from 'mobx-react-devtools';
 import { observer } from 'mobx-react';
 import { TemplatePicker } from './TemplatePicker';
-import { SelectedTemplates } from './SelectedTemplates';
 import { templateBuilder } from './TemplateBuilder';
 import $ from 'jquery';
 
 @observer(['store'])
 class App extends Component {
   render() {
-    const { filteredTemplates, selectedTemplates } = this.props.store;
+    const { templates, canDeploy } = this.props.store;
     return (
       <div className="container">
         <h1 className="c-heading-4">Happy Stack</h1>
-        <div className="search-container">
-          <label htmlFor="search">Choose your stack:</label>
-          <input id="search" className="c-text-field search" type="text" placeholder="Search ..." onChange={this.handleChange} />
-          <TemplatePicker templates={filteredTemplates} />
+        <div className="c-group f-wrap-items">
+          <TemplatePicker templates={templates}/>
         </div>
-        <div className="selected-templates">
-          <SelectedTemplates templates={selectedTemplates} />
-        <button className="c-button" type="submit" onClick={this.saveTemplate} disabled={selectedTemplates.length === 0}>Save Template</button>
-        </div>
+        <button type="submit" className="c-button" disabled={!canDeploy} onClick={this.saveTemplate}>Deploy stack to azure</button>
         <DevTools />
       </div>
     );
-  }
-  handleChange = e => {
-    const { store } = this.props;
-    store.setFilterText(e.target.value);
   }
   saveTemplate = e => {
     e.preventDefault();
