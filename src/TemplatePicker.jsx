@@ -6,7 +6,7 @@ export class TemplatePicker extends Component {
   render() {
     const { templates } = this.props;
     return (
-      <ul>
+      <ul className="c-menu" aria-hidden="false">
         {templates.map(template => <TemplatePickerItem key={template.name} template={template} />)}
       </ul>
     );
@@ -18,11 +18,11 @@ export class TemplatePickerItem extends Component {
   render() {
     const { template } = this.props;
     return (
-      <div>
+      <li className="c-menu-item">
         <a onClick={this.handleClick}>
           {template.name}
         </a>
-      </div>
+      </li>
     );
   }
   handleClick = e => {

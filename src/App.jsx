@@ -11,12 +11,17 @@ class App extends Component {
   render() {
     const { filteredTemplates, selectedTemplates } = this.props.store;
     return (
-      <div>
-        <input type="text" placeholder="Search ..." onChange={this.handleChange} />
-        <TemplatePicker templates={filteredTemplates} />
-        <strong>Selected Templates</strong>
-        <SelectedTemplates templates={selectedTemplates} />
-        <button onClick={this.saveTemplate} disabled={selectedTemplates.length === 0}>Save Template</button>
+      <div className="container">
+        <div className="search-container">
+          <label htmlFor="search">Choose your stack:</label>
+          <input id="search" className="c-text-field search" type="text" placeholder="Search ..." onChange={this.handleChange} />
+          <TemplatePicker templates={filteredTemplates} />
+        </div>
+        <div className="selected-templates">
+          <SelectedTemplates templates={selectedTemplates} />
+        </div>
+        <div style={{clear:'both'}}>&nbsp;</div>
+        <button className="c-button" type="submit" onClick={this.saveTemplate} disabled={selectedTemplates.length === 0}>Save Template</button>
         <DevTools />
       </div>
     );
