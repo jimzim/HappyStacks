@@ -12,6 +12,7 @@ class App extends Component {
     const { filteredTemplates, selectedTemplates } = this.props.store;
     return (
       <div className="container">
+        <h1 className="c-heading-4">Happy Stack</h1>
         <div className="search-container">
           <label htmlFor="search">Choose your stack:</label>
           <input id="search" className="c-text-field search" type="text" placeholder="Search ..." onChange={this.handleChange} />
@@ -19,9 +20,8 @@ class App extends Component {
         </div>
         <div className="selected-templates">
           <SelectedTemplates templates={selectedTemplates} />
-        </div>
-        <div style={{clear:'both'}}>&nbsp;</div>
         <button className="c-button" type="submit" onClick={this.saveTemplate} disabled={selectedTemplates.length === 0}>Save Template</button>
+        </div>
         <DevTools />
       </div>
     );
